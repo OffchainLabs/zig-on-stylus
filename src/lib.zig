@@ -1,7 +1,8 @@
 const std = @import("std");
 const WasmAllocator = @import("WasmAllocator.zig");
 
-// External imports provided to all WASM programs on Stylus.
+// External imports provided to all WASM programs on Stylus. These functions
+// can be use to read input arguments coming into the program and output arguments to callers.
 pub extern "vm_hooks" fn read_args(dest: *u8) void;
 pub extern "vm_hooks" fn write_result(data: *const u8, len: usize) void;
 

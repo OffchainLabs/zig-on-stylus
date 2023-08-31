@@ -9,7 +9,7 @@ pub fn build(b: *Builder) void {
     });
     const optimize = b.standardOptimizeOption(.{});
     const lib = b.addStaticLibrary(.{
-        .name = "zstylus",
+        .name = "zig-on-stylus",
         .root_source_file = .{ .path = "src/lib.zig" },
         .optimize = optimize,
         .target = target,
