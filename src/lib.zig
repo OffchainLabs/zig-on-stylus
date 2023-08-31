@@ -29,9 +29,9 @@ export fn user_entrypoint(len: usize) i32 {
     // Expects the input is a u16 encoded as little endian bytes.
     var input = args(len) catch return 1;
     var check_nth_prime = std.mem.readIntSliceLittle(u16, input);
-    const limit = 100_000;
-    if (input > limit) {
-        @panic("input is greater than limit of 100,000 primes");
+    const limit: u16 = 10_000;
+    if (check_nth_prime > limit) {
+        @panic("input is greater than limit of 10,000 primes");
     }
     // Checks if the number is prime and returns a boolean using the output function.
     var is_prime = sieve_of_erathosthenes(limit, check_nth_prime);

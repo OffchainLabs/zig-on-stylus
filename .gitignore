@@ -1,2 +1,4 @@
 zig-cache
 zig-out
+lib.wasm
+lib.wasm.o

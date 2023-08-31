@@ -9,6 +9,8 @@ Stylus
 
 Tested on Zig 0.11.0
 
+You can run `make all` or
+
 ```bash
 zig build-lib ./src/lib.zig -target wasm32-freestanding -dynamic --export=user_entrypoint -OReleaseSmall 
 ```
