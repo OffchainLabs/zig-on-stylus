@@ -2,7 +2,7 @@
 
 This PR implements the sieve of erathosthenes algorithm to compute prime numbers in Zig, to be deployed as a smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
 
-![Image](https://ray.so/#code=Zm4gc2lldmVfb2ZfZXJhdGhvc3RoZW5lcyhjb21wdGltZSBsaW1pdDogdXNpemUsIG50aDogdTE2KSBib29sIHsKICAgIHZhciBwcmltZSA9IFtfXWJvb2x7dHJ1ZX0gKiogbGltaXQ7CiAgICBwcmltZVswXSA9IGZhbHNlOwogICAgcHJpbWVbMV0gPSBmYWxzZTsKICAgIHZhciBpOiB1c2l6ZSA9IDI7CiAgICB3aGlsZSAoaSAqIGkgPCBsaW1pdCkgOiAoaSArPSAxKSB7CiAgICAgICAgaWYgKHByaW1lW2ldKSB7CiAgICAgICAgICAgIHZhciBqID0gaSAqIGk7CiAgICAgICAgICAgIHdoaWxlIChqIDwgbGltaXQpIDogKGogKz0gaSkKICAgICAgICAgICAgICAgIHByaW1lW2pdID0gZmFsc2U7CiAgICAgICAgfQogICAgfQogICAgcmV0dXJuIHByaW1lW250aF07Cn0&theme=candy&padding=16&language=csharp&title=main.zig)
+![Image](./sample.png)
 
 Stylus is a new technology developed for Arbitrum chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from 10-70x, and memory efficiency gains as high as 100-500x.
 
