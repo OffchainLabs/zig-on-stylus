@@ -1,6 +1,6 @@
 # Stylus Zig Example Program
 
-This PR implements the sieve of erathosthenes algorithm to compute prime numbers in Zig, to be deployed as a smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
+This PR implements a smart contract containing the [sieve of erathosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to compute prime numbers in Zig. This program can be deployed as a WASM smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
 
 ```c#
 fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
@@ -19,7 +19,7 @@ fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
 }
 ```
 
-Stylus is a new technology developed for Arbitrum chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from 10-70x, and memory efficiency gains as high as 100-500x.
+Stylus is a new technology developed for [Arbitrum](https://arbitrum.io) chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from **10-70x**, and memory efficiency gains as high as **100-500x**.
 
 ## Walkthrough
 
@@ -27,7 +27,7 @@ See our full guide on how we added support for Zig on Arbitrum Stylus in [WALKTH
 
 ## How and Why
 
-This is possible thanks to [WebAssembly](https://www.infoworld.com/article/3291780/what-is-webassembly-the-next-generation-web-platform-explained.html) technology, which all Stylus programs compile to. Stylus smart contracts live under the **same Ethereum state trie** in Arbitrum nodes, and can fully interoperate with Solidity or Vyper EVM smart contracts. With Stylus, developers can write smart contracts in Rust that talk to Solidity and vice versa without any limitations.
+Being able to deploy smart contracts to an Ethereum-based chain is thanks to [WebAssembly](https://www.infoworld.com/article/3291780/what-is-webassembly-the-next-generation-web-platform-explained.html) technology, which all Stylus programs compile to. Stylus smart contracts live under the **same Ethereum state trie** in Arbitrum nodes, and can fully interoperate with Solidity or Vyper EVM smart contracts. With Stylus, developers can write smart contracts in Rust that talk to Solidity and vice versa without any limitations.
 
 Today, the Stylus testnet also comes with 2 officially supported SDKs for developers to write contracts in the [Rust](https://github.com/OffchainLabs/stylus-sdk-rs) or [C](https://github.com/OffchainLabs/stylus-sdk-c) programming languages. 
 
