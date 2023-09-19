@@ -2,7 +2,22 @@
 
 This PR implements the sieve of erathosthenes algorithm to compute prime numbers in Zig, to be deployed as a smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
 
-![Image](./sample.png)
+```c#
+fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
+    var prime = [_]bool{true} ** limit;
+    prime[0] = false;
+    prime[1] = false;
+    var i: usize = 2;
+    while (i * i < limit) : (i += 1) {
+        if (prime[i]) {
+            var j = i * i;
+            while (j < limit) : (j += i)
+                prime[j] = false;
+        }
+    }
+    return prime[nth];
+}
+```
 
 Stylus is a new technology developed for Arbitrum chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from 10-70x, and memory efficiency gains as high as 100-500x.
 
