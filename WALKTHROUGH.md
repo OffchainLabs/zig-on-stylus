@@ -36,7 +36,7 @@ cargo install cargo-stylus
 First, let's clone the repository:
 
 ```
-git clone https://rauljordan/zig-on-stylus && cd zig-on-stylus
+git clone https://offchainlabs/zig-on-stylus && cd zig-on-stylus
 ```
 
 then delete everything inside of `main.zig`. We'll be filling it out ourselves in this tutorial.
