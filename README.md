@@ -1,118 +1,30 @@
 # Stylus Zig Example Program
 
-This PR implements the sieve of erathosthenes algorithm to compute prime numbers in Zig, to be deployed as a WebAssembly smart contract to Arbitrum Stylus.
+This PR implements the sieve of erathosthenes algorithm to compute prime numbers in Zig, to be deployed as a smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
 
-Stylus is is an upgrade to Arbitrum, an Ethereum-focused, smart contract blockchain that scales the network. In addition to supporting Ethereum smart contracts written in Solidity, Stylus supports programs written in WebAssembly. Because Zig compiles to WASM and can produce small binaries, it's an excellent fit.
+![Image](https://ray.so/#code=Zm4gc2lldmVfb2ZfZXJhdGhvc3RoZW5lcyhjb21wdGltZSBsaW1pdDogdXNpemUsIG50aDogdTE2KSBib29sIHsKICAgIHZhciBwcmltZSA9IFtfXWJvb2x7dHJ1ZX0gKiogbGltaXQ7CiAgICBwcmltZVswXSA9IGZhbHNlOwogICAgcHJpbWVbMV0gPSBmYWxzZTsKICAgIHZhciBpOiB1c2l6ZSA9IDI7CiAgICB3aGlsZSAoaSAqIGkgPCBsaW1pdCkgOiAoaSArPSAxKSB7CiAgICAgICAgaWYgKHByaW1lW2ldKSB7CiAgICAgICAgICAgIHZhciBqID0gaSAqIGk7CiAgICAgICAgICAgIHdoaWxlIChqIDwgbGltaXQpIDogKGogKz0gaSkKICAgICAgICAgICAgICAgIHByaW1lW2pdID0gZmFsc2U7CiAgICAgICAgfQogICAgfQogICAgcmV0dXJuIHByaW1lW250aF07Cn0&theme=candy&padding=16&language=csharp&title=main.zig)
 
-Today, programs written in Zig can be deployed to the Stylus testnet, which is free to use.
+Stylus is a new technology developed for Arbitrum chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from 10-70x, and memory efficiency gains as high as 100-500x.
 
-## Overview
+## Walkthrough
 
-To support Stylus, your Zig programs simply need to define an entrypoint that is different from the `main` function in Zig. This entrypoint has access to reading input bytes and outputting bytes to callers of your program via two imported WebAssembly functions:
+See our full guide on how we added support for Zig on Arbitrum Stylus in [WALKTHROUGH.md](./WALKTHROUGH.md)
 
-```c
-pub extern "vm_hooks" fn read_args(dest: *u8) void;
-pub extern "vm_hooks" fn write_result(data: *const u8, len: usize) void;
-```
+## How and Why
 
-TODO: Cover the rest...
+This is possible thanks to [WebAssembly](https://www.infoworld.com/article/3291780/what-is-webassembly-the-next-generation-web-platform-explained.html) technology, which all Stylus programs compile to. Stylus smart contracts live under the **same Ethereum state trie** in Arbitrum nodes, and can fully interoperate with Solidity or Vyper EVM smart contracts. With Stylus, developers can write smart contracts in Rust that talk to Solidity and vice versa without any limitations.
 
-TODO: Explain why I had to include a custom allocator
+Today, the Stylus testnet also comes with 2 officially supported SDKs for developers to write contracts in the [Rust](https://github.com/OffchainLabs/stylus-sdk-rs) or [C](https://github.com/OffchainLabs/stylus-sdk-c) programming languages. 
 
-## Building
+However, _anyone_ can add support for new languages in Stylus. **As long as a programming language can compile to WebAssembly**, fit under 24Kb brotli-compressed, and meets some of the gas metering requirements of Stylus, it can be deployed and used onchain.
 
-Install Zig 0.11.0, then you can run `make all` or
+Why Zig?
 
-```bash
-zig build-lib ./src/lib.zig -target wasm32-freestanding -dynamic --export=user_entrypoint -OReleaseSmall 
-```
+1. Zig contains **memory safety guardrails**, requiring developers to think hard about manual memory allocation in a prudent manner
+2. Zig is a **C equivalent** language, and its tooling is also a C compiler. This means C projects can incrementally adopt Zig when refactoring 
+3. Zig is **lightning fast** and produces **small binaries**, making it suitable for blockchain applications
 
-## Deploying
-
-## Quick Start 
-
-Install the latest version of [Rust](https://www.rust-lang.org/tools/install), and then install the Stylus CLI tool with Cargo
-
-```bash
-cargo install cargo-stylus
-```
-
-Add the `wasm32-unknown-unknown` build target to your Rust compiler:
-
-```
-rustup target add wasm32-unknown-unknown
-```
-
-You should now have it available as a Cargo subcommand:
-
-```bash
-cargo stylus --help
-```
-
-You can then use the `cargo stylus` command to also deploy your program to the Stylus testnet. We can use the tool to first check
-our program compiles to valid WASM for Stylus and will succeed a deployment onchain without transacting:
-
-```bash
-cargo stylus check --wasm-file-path=lib.wasm
-```
-
-If successful, you should see:
-
-```bash
-Finished release [optimized] target(s) in 1.88s
-Compressed WASM size: 600 B
-Program succeeded Stylus onchain activation checks with Stylus version: 1
-```
-
-Here's how to deploy:
-
-```bash
-cargo stylus deploy \
-  --private-key=<YOUR_PRIVATE_KEY>
-  --wasm-file-path=lib.wasm
-```
-
-The CLI will send 2 transactions to deploy and activate your program onchain.
-
-```bash
-Compressed WASM size: 8.9 KB
-Deploying program to address 0x457b1ba688e9854bdbed2f473f7510c476a3da09
-Estimated gas: 1973450
-Submitting tx...
-Confirmed tx 0x42db…7311, gas used 1973450
-Activating program at address 0x457b1ba688e9854bdbed2f473f7510c476a3da09
-Estimated gas: 14044638
-Submitting tx...
-Confirmed tx 0x0bdb…3307, gas used 14044638
-```
-
-Once both steps are successful, you can interact with your program as you would with any Ethereum smart contract, by making `eth_call`s to a JSON-RPC backend that supports Stylus.
-
-TODO: Link testnet info...
-
-## Calling Your Program
-
-By using the program address from your deployment step above, you can attempt to call your Zig program 
-
-```rs
-let tx_req = Eip1559TransactionRequest::new()
-  .to(address)
-  .data(num_to_check.to_le_bytes());
-let tx = TypedTransaction::Eip1559(tx_req);
-let got = provider.call_raw(&tx).await?;
-let end = Instant::now();
-assert!(is_prime as u8 == got[0]);
-```
-
-To run it, do:
-
-```
-cd rust-example && cargo run
-```
-
-## Peeking Under the Hood
-
-Explain what's going on...
+Programs written in Zig and deployed to Stylus have a tiny footprint and will have gas costs comparable, if not equal to, C programs.
 
 ## License
 

@@ -111,6 +111,11 @@ fn resize(
     }
 }
 
+inline fn compute_vtable_lookups(ctx: *anyopaque, buf: []u8) void {
+    _ = buf;
+    _ = ctx;
+}
+
 fn free(
     ctx: *anyopaque,
     buf: []u8,

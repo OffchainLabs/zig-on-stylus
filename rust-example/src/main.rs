@@ -1,12 +1,16 @@
+use std::time::Instant;
 use ethers::{
     providers::{Http, Provider},
     types::{transaction::eip2718::TypedTransaction, Address, Eip1559TransactionRequest},
 };
-use std::time::Instant;
+use eyre::eyre;
+
+const ENV_PROGRAM_ADDRESS: &str = "STYLUS_PROGRAM_ADDRESS";
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    let program_address = "2aa980ae2a062530984281927a4ff2a9672b71c3".to_string();
+    let program_address = std::env::var(ENV_PROGRAM_ADDRESS)
+        .map_err(|_| eyre!("No {} env var set", ENV_PROGRAM_ADDRESS))?;
     let rpc_url = "https://stylus-testnet.arbitrum.io/rpc";
 
     let provider = Provider::<Http>::try_from(rpc_url)?;
@@ -29,7 +33,7 @@ async fn main() -> eyre::Result<()> {
         let start = Instant::now();
         let got = provider.call_raw(&tx).await?;
         let end = Instant::now();
-        println!("Resp: {:?}, took: {:?}", got[0], end.duration_since(start));
+        println!("Checking if {} is_prime = {:?}, took: {:?}", num_to_check, got[0] == 1, end.duration_since(start));
         assert!(is_prime as u8 == got[0]);
     }
     Ok(())
