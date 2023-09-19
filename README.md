@@ -1,8 +1,8 @@
 # Ethereum Compatible Smart Contracts In Zig 
 
-This PR implements a smart contract containing the [sieve of erathosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to compute prime numbers in the [Zig](https://ziglang.org) programming language. This code can be deployed as a WASM smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
+This repo implements a smart contract using the [sieve of erathosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to compute prime numbers in the [Zig](https://ziglang.org) programming language. This code can be deployed as a WASM smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
 
-Arbitrum Stylus is an Ethereum scaling solution which allows developers to write EVM and WASM smart contracts.
+Arbitrum is an Ethereum scaling solution which allows developers to write EVM and WASM smart contracts. Stylus is a new technology developed for [Arbitrum](https://arbitrum.io) chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from **10-70x**, and memory efficiency gains as high as **100-500x**.
 
 ```c#
 fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
@@ -21,7 +21,6 @@ fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
 }
 ```
 
-Stylus is a new technology developed for [Arbitrum](https://arbitrum.io) chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from **10-70x**, and memory efficiency gains as high as **100-500x**.
 
 ## Walkthrough
 
