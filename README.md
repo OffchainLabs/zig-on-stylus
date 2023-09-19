@@ -1,6 +1,8 @@
-# Stylus Zig Example Program
+# Ethereum Compatible Smart Contracts In Zig 
 
-This PR implements a smart contract containing the [sieve of erathosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to compute prime numbers in Zig. This program can be deployed as a WASM smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
+This PR implements a smart contract containing the [sieve of erathosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to compute prime numbers in the [Zig](https://ziglang.org) programming language. This code can be deployed as a WASM smart contract to [Arbitrum Stylus](https://arbitrum.io/stylus).
+
+Arbitrum Stylus is an Ethereum scaling solution which allows developers to write EVM and WASM smart contracts.
 
 ```c#
 fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
