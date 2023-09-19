@@ -50,19 +50,24 @@ Go ahead and replace everything in your `main.zig` function with:
 ```c
 pub extern "vm_hooks" fn memory_grow(len: u32) void;
 
-// The main entrypoint to use for execution of our Stylus WASM program.
+export fn mark_unused() void {
+    memory_grow(0);
+    @panic("");
+}
+
+// The main entrypoint to use for execution of the Stylus WASM program.
 export fn user_entrypoint(len: usize) i32 {
-    memory_grow(len);
+    _ = len;
     return 0;
 }
 ```
 
-At the top, we declare the `memory_grow` external function for use, and simply call it within the body of our entrypoint. It will just grow the memory available by the specified length.
+At the top, we declare the `memory_grow` external function for use.
 
-Next, we can build our Zig library to a freestanding WASM file for our onchain deployment. Using the `Makefile` from this repository:
+Next, we can build our Zig library to a freestanding WASM file for our onchain deployment:
 
 ```bash
-make all
+zig build-lib ./src/main.zig -target wasm32-freestanding -dynamic --export=user_entrypoint -OReleaseSmall --export=mark_unused
 ```
 
 This is enough for us to deploy on the Stylus testnet! We'll use the [Stylus CLI tool](https://github.com/OffchainLabs/cargo-stylus), which you installed earlier using `cargo install cargo-stylus`:
@@ -82,7 +87,7 @@ You can see that our Zig program is _tiny_ when compiled to WASM. Next, we can c
 
 ```
 export ADDR=0xe0CD04EA8c148C9a5A58Fee1C895bc2cf6896799
-cast call --rpc-url 'https://stylus-testnet.arbitrum.io/rpc' $ADDR
+cast call --rpc-url 'https://stylus-testnet.arbitrum.io/rpc' $ADDR '0x'
 ```
 
 Calling the contract via RPC should simply return the value `0` as we programmed it to.
