@@ -6,7 +6,7 @@ This repo implements a demo smart contract using the [sieve of erathosthenes](ht
 
 Arbitrum is an Ethereum scaling solution which allows developers to write EVM and WASM smart contracts. Stylus is a new technology developed for [Arbitrum](https://arbitrum.io) chains which gives smart contract developers superpowers. With Stylus, developers can write EVM-compatible smart contracts in many different programming languages, and reap massive performance gains. Stylus slashes fees, with performance gains ranging from **10-70x**, and memory efficiency gains as high as **100-500x**.
 
-```c#
+```zig
 fn sieve_of_erathosthenes(comptime limit: usize, nth: u16) bool {
     var prime = [_]bool{true} ** limit;
     prime[0] = false;
