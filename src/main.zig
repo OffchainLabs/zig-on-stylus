@@ -15,27 +15,27 @@ pub const allocator = std.mem.Allocator{
 
 // Reads input arguments from an external, WASM import into a dynamic slice.
 pub fn args(len: usize) ![]u8 {
-    var input = try allocator.alloc(u8, len);
-    read_args(@ptrCast(*u8, input));
+    const input = try allocator.alloc(u8, len);
+    read_args(@ptrCast(input));
     return input;
 }
 
 // Outputs data as bytes via a write_result, external WASM import.
 pub fn output(data: []u8) void {
-    write_result(@ptrCast(*u8, data), data.len);
+    write_result(@ptrCast(data), data.len);
 }
 
 // The main entrypoint to use for execution of the Stylus WASM program.
 export fn user_entrypoint(len: usize) i32 {
     // Expects the input is a u16 encoded as little endian bytes.
     var input = args(len) catch return 1;
-    var check_nth_prime = std.mem.readIntSliceLittle(u16, input);
+    const check_nth_prime = std.mem.readPackedInt(u16, input, 0, std.builtin.Endian.little);
     const limit: u16 = 10_000;
     if (check_nth_prime > limit) {
         @panic("input is greater than limit of 10,000 primes");
     }
     // Checks if the number is prime and returns a boolean using the output function.
-    var is_prime = sieve_of_erathosthenes(limit, check_nth_prime);
+    const is_prime = sieve_of_erathosthenes(limit, check_nth_prime);
     var out = input[0..1];
     if (is_prime) {
         out[0] = 1;

@@ -3,3 +3,5 @@ zig-out
 main.wasm
 main.wasm.o
 target/
+.DS_STORE
+.zig-cache

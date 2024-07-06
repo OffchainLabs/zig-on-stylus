@@ -8,7 +8,7 @@ const math = std.math;
 
 // Instead of the built-in, @wasmMemoryGrow function, Stylus programs need to grow their memory
 // via an external import called memory_grow from a group called vm_hooks.
-pub extern "vm_hooks" fn memory_grow(len: u32) void;
+pub extern "vm_hooks" fn pay_for_memory_grow(len: u32) void;
 
 comptime {
     if (!builtin.target.isWasm()) {
@@ -49,7 +49,7 @@ fn alloc(ctx: *anyopaque, len: usize, log2_align: u8, return_address: usize) ?[*
     _ = ctx;
     _ = return_address;
     // Make room for the freelist next pointer.
-    const alignment = @as(usize, 1) << @intCast(Allocator.Log2Align, log2_align);
+    const alignment = @as(usize, 1) << @intCast(log2_align);
     const actual_len = @max(len +| @sizeOf(usize), alignment);
     const slot_size = math.ceilPowerOfTwo(usize, actual_len) catch return null;
     const class = math.log2(slot_size) - min_class;
@@ -57,7 +57,7 @@ fn alloc(ctx: *anyopaque, len: usize, log2_align: u8, return_address: usize) ?[*
         const addr = a: {
             const top_free_ptr = frees[class];
             if (top_free_ptr != 0) {
-                const node = @intToPtr(*usize, top_free_ptr + (slot_size - @sizeOf(usize)));
+                const node: *usize = @ptrFromInt(top_free_ptr + (slot_size - @sizeOf(usize)));
                 frees[class] = node.*;
                 break :a top_free_ptr;
             }
@@ -76,11 +76,11 @@ fn alloc(ctx: *anyopaque, len: usize, log2_align: u8, return_address: usize) ?[*
                 break :a next_addr;
             }
         };
-        return @intToPtr([*]u8, addr);
+        return @ptrFromInt(addr);
     }
     const bigpages_needed = bigPagesNeeded(actual_len);
     const addr = allocBigPages(bigpages_needed);
-    return @intToPtr([*]u8, addr);
+    return @ptrFromInt(addr);
 }
 
 fn resize(
@@ -94,7 +94,7 @@ fn resize(
     _ = return_address;
     // We don't want to move anything from one size class to another, but we
     // can recover bytes in between powers of two.
-    const buf_align = @as(usize, 1) << @intCast(Allocator.Log2Align, log2_buf_align);
+    const buf_align = @as(usize, 1) << @intCast(log2_buf_align);
     const old_actual_len = @max(buf.len + @sizeOf(usize), buf_align);
     const new_actual_len = @max(new_len +| @sizeOf(usize), buf_align);
     const old_small_slot_size = math.ceilPowerOfTwoAssert(usize, old_actual_len);
@@ -124,20 +124,20 @@ fn free(
 ) void {
     _ = ctx;
     _ = return_address;
-    const buf_align = @as(usize, 1) << @intCast(Allocator.Log2Align, log2_buf_align);
+    const buf_align = @as(usize, 1) << @intCast(log2_buf_align);
     const actual_len = @max(buf.len + @sizeOf(usize), buf_align);
     const slot_size = math.ceilPowerOfTwoAssert(usize, actual_len);
     const class = math.log2(slot_size) - min_class;
-    const addr = @ptrToInt(buf.ptr);
+    const addr = @intFromPtr(buf.ptr);
     if (class < size_class_count) {
-        const node = @intToPtr(*usize, addr + (slot_size - @sizeOf(usize)));
+        const node: *usize = @ptrFromInt(addr + (slot_size - @sizeOf(usize)));
         node.* = frees[class];
         frees[class] = addr;
     } else {
         const bigpages_needed = bigPagesNeeded(actual_len);
         const pow2_pages = math.ceilPowerOfTwoAssert(usize, bigpages_needed);
         const big_slot_size_bytes = pow2_pages * bigpage_size;
-        const node = @intToPtr(*usize, addr + (big_slot_size_bytes - @sizeOf(usize)));
+        const node: *usize = @ptrFromInt(addr + (big_slot_size_bytes - @sizeOf(usize)));
         const big_class = math.log2(pow2_pages);
         node.* = big_frees[big_class];
         big_frees[big_class] = addr;
@@ -155,12 +155,12 @@ fn allocBigPages(n: usize) usize {
 
     const top_free_ptr = big_frees[class];
     if (top_free_ptr != 0) {
-        const node = @intToPtr(*usize, top_free_ptr + (slot_size_bytes - @sizeOf(usize)));
+        const node: *usize = @ptrFromInt(top_free_ptr + (slot_size_bytes - @sizeOf(usize)));
         big_frees[class] = node.*;
         return top_free_ptr;
     }
 
-    memory_grow(pow2_pages * pages_per_bigpage);
-    const addr = @intCast(u32, 1) * wasm.page_size;
+    pay_for_memory_grow(pow2_pages * pages_per_bigpage);
+    const addr = wasm.page_size;
     return addr;
 }
