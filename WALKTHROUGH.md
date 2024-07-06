@@ -20,7 +20,7 @@ Programs written in Zig and deployed to Stylus have a tiny footprint and will ha
 
 ## Requirements
 
-- Download and install [Zig 0.11.0](https://ziglang.org/downloads)
+- Download and install [Zig](https://ziglang.org/downloads)
 - Install [Rust](https://www.rust-lang.org/tools/install), which we'll need for the [Stylus CLI tool](https://github.com/OffchainLabs/cargo-stylus) to deploy our program to the Stylus testnet
 
 We'll also be using Rust to run an example script that can call our Zig contract on the Stylus testnet using the popular [ethers-rs](https://github.com/gakonst/ethers-rs) library.
@@ -43,12 +43,12 @@ then delete everything inside of `main.zig`. We'll be filling it out ourselves i
 
 To support Stylus, your Zig programs need to define a special entrypoint function, which takes in the length of its input args, `len`, and returns a status code `i32`, which is either 0 or 1. We won't need the Zig standard library for this.
 
-One more thing it needs is to use a special function, called `memory_grow` which can allocate memory for your program. This function is *injected* into all Stylus contracts as an external import. Internally, we call these `vm_hooks`, and also refer to them as `host-io's`, because they give you access to the host, EVM environment.
+One more thing it needs is to use a special function, called `pay_for_memory_grow` which can allocate memory for your program. This function is *injected* into all Stylus contracts as an external import. Internally, we call these `vm_hooks`, and also refer to them as `host-io's`, because they give you access to the host, EVM environment.
 
 Go ahead and replace everything in your `main.zig` function with:
 
 ```c
-pub extern "vm_hooks" fn memory_grow(len: u32) void;
+pub extern "vm_hooks" fn pay_for_memory_grow(len: u32) void;
 
 export fn mark_unused() void {
     memory_grow(0);
@@ -67,13 +67,13 @@ At the top, we declare the `memory_grow` external function for use.
 Next, we can build our Zig library to a freestanding WASM file for our onchain deployment:
 
 ```bash
-zig build-lib ./src/main.zig -target wasm32-freestanding -dynamic --export=user_entrypoint -OReleaseSmall --export=mark_unused
+zig build-exe ./src/main.zig -target wasm32-freestanding --export=user_entrypoint -fno-entry -OReleaseSmall 
 ```
 
-This is enough for us to deploy on the Stylus testnet! We'll use the [Stylus CLI tool](https://github.com/OffchainLabs/cargo-stylus), which you installed earlier using `cargo install cargo-stylus`:
+This is enough for us to deploy on the Stylus testnet! We'll use the [Stylus CLI tool](https://github.com/OffchainLabs/cargo-stylus), which you installed earlier using `cargo install cargo-stylus cargo-stylus-check --force`:
 
 ```
-cargo stylus deploy --private-key=<YOUR_TESTNET_PRIVKEY> --wasm-file-path=main.wasm
+cargo stylus deploy --private-key=<YOUR_TESTNET_PRIVKEY> --wasm-file=main.wasm
 ```
 
 The tool will send two transactions: one to deploy your Zig contract's code onchain, and the other to activate it for usage.
@@ -83,11 +83,11 @@ Uncompressed WASM size: 112 B
 Compressed WASM size to be deployed onchain: 103 B
 ```
 
-You can see that our Zig program is _tiny_ when compiled to WASM. Next, we can call our contract to make sure it works using any of your favorite Ethereum tooling. In this example below, we use the `cast` CLI tool provided by [foundry](https://github.com/foundry-rs/foundry). The contract above has been deployed to the Stylus testnet at address `0xe0CD04EA8c148C9a5A58Fee1C895bc2cf6896799`.
+You can see that our Zig program is _tiny_ when compiled to WASM. Next, we can call our contract to make sure it works using any of your favorite Ethereum tooling. In this example below, we use the `cast` CLI tool provided by [foundry](https://github.com/foundry-rs/foundry). The contract above has been deployed to the Stylus testnet at address `0xbe8044694704684ecaff1e31739a5efeadfade27`.
 
 ```
-export ADDR=0xe0CD04EA8c148C9a5A58Fee1C895bc2cf6896799
-cast call --rpc-url 'https://stylus-testnet.arbitrum.io/rpc' $ADDR '0x'
+export ADDR=0xbe8044694704684ecaff1e31739a5efeadfade27
+cast call --rpc-url 'https://sepolia-rollup.arbitrum.io/rpc ' $ADDR '0x'
 ```
 
 Calling the contract via RPC should simply return the value `0` as we programmed it to.
@@ -157,14 +157,14 @@ const std = @import("std");
 const allocator = std.heap.WasmAllocator;
 ```
 
-Our code compiles, but will it deploy onchain? Run `cargo stylus check --wasm-file-path=main.wasm` and see:
+Our code compiles, but will it deploy onchain? Run `cargo stylus check --wasm-file=main.wasm` and see:
 
 ```
 Caused by:
     missing import memory_grow
 ```
 
-What's wrong? This means that the WasmAllocator from the Zig standard library should actually be using our special `memory_grow` hostio function underneath the hood. We can fix this by copying over the WasmAllocator.zig file from the standard library, and modifying a single line to use `memory_grow`.
+What's wrong? This means that the WasmAllocator from the Zig standard library should actually be using our special `pay_for_memory_grow` hostio function underneath the hood. We can fix this by copying over the WasmAllocator.zig file from the standard library, and modifying a single line to use `pay_for_memory_grow`.
 
 You can find this file under `WasmAllocator.zig` in this repository, so just download it and put it next to your `main.zig`. We can now use it:
 
@@ -185,21 +185,20 @@ Building again and running `cargo stylus check` should now succeed:
 ```bash
 Uncompressed WASM size: 514 B
 Compressed WASM size to be deployed onchain: 341 B
-Connecting to Stylus RPC endpoint: https://stylus-testnet.arbitrum.io/rpc
 Stylus program with same WASM code is already activated onchain
 ```
 
 Let's deploy it:
 
 ```
-cargo stylus deploy --private-key=<YOUR_TESTNET_PRIVKEY> --wasm-file-path=main.wasm
+cargo stylus deploy --private-key=<YOUR_TESTNET_PRIVKEY> --wasm-file=main.wasm
 ```
 
 Now if we try to call it, it will output whatever input we send it, like an echo. Let's send it the input 0x123456:
 
 ```
-export ADDR=0x20Aa65a9D3F077293993150C0345f62B50CCb549
-cast call --rpc-url 'https://stylus-testnet.arbitrum.io/rpc' $ADDR '0x123456'
+export ADDR=0xbe8044694704684ecaff1e31739a5efeadfade27
+cast call --rpc-url 'https://sepolia-rollup.arbitrum.io/rpc ' $ADDR '0x123456'
 
 0x123456
 ```
@@ -234,15 +233,15 @@ Checking if a number N is prime would involve just checking if the value at inde
 ```c
 // The main entrypoint to use for execution of the Stylus WASM program.
 export fn user_entrypoint(len: usize) i32 {
-    // Expects the input is a u16 encoded as little endian bytes.
+      // Expects the input is a u16 encoded as little endian bytes.
     var input = args(len) catch return 1;
-    var check_nth_prime = std.mem.readIntSliceLittle(u16, input);
+    const check_nth_prime = std.mem.readPackedInt(u16, input, 0, std.builtin.Endian.little);
     const limit: u16 = 10_000;
     if (check_nth_prime > limit) {
         @panic("input is greater than limit of 10,000 primes");
     }
     // Checks if the number is prime and returns a boolean using the output function.
-    var is_prime = sieve_of_erathosthenes(limit, check_nth_prime);
+    const is_prime = sieve_of_erathosthenes(limit, check_nth_prime);
     var out = input[0..1];
     if (is_prime) {
         out[0] = 1;
@@ -263,14 +262,13 @@ Compressed WASM size to be deployed onchain: 525 B
 
 Our uncompressed size is big because of that giant array of booleans, but the program is highly compressible because all of them are zeros!
 
-An instance of this program has been deployed to the Stylus testnet at address `0x0c503Bb757b1CaaD0140e8a2700333C0C9962FE4`
+An instance of this program has been deployed to the Stylus testnet at address `0xbe8044694704684ecaff1e31739a5efeadfade27`
 
 ## Interacting With Stylus Programs Using Ethers-rs
 
 An example is included in this repo under `rust-example` which uses the popular [ethers-rs](https://github.com/gakonst/ethers-rs) library to interact with our prime sieve contract on the Stylus testnet. To run it, do:
 
 ```
-export STYLUS_PROGRAM_ADDRESS=0x0c503Bb757b1CaaD0140e8a2700333C0C9962FE4
 cargo run
 ```
 
